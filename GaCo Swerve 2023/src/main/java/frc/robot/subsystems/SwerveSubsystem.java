@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -49,8 +50,10 @@ public class SwerveSubsystem extends SubsystemBase {
             DriveConstants.kBackRightDriveAbsoluteEncoderReversed);
 
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
-    //private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
-    //        new Rotation2d(0))
+    private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
+            new Rotation2d(0), null);
+
+    private SwerveModulePosition[] modulePositions;
 
     public SwerveSubsystem() {
         new Thread(() -> {
@@ -75,20 +78,26 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        //return odometer.getPoseMeters();
-        return new Pose2d();
+        return odometer.getPoseMeters();
     }
 
     public void resetOdometry(Pose2d pose) {
-        //odometer.resetPosition(pose, getRotation2d());
+        odometer.resetPosition(getRotation2d(), modulePositions, pose);  // Phil's best guess.
     }
 
     @Override
     public void periodic() {
-        //odometer.update(getRotation2d(), frontLeft.getState(), frontRight.getState(), backLeft.getState(),
-        //        backRight.getState());
+        getModulePositions();  // new By Phil.
+        odometer.update(getRotation2d(), modulePositions);
         SmartDashboard.putNumber("Robot Heading", getHeading());
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
+    }
+
+    public void getModulePositions() {
+        modulePositions[0] = new SwerveModulePosition(frontLeft.getDrivePosition(), new Rotation2d(frontLeft.getTurningPosition()));
+        modulePositions[1] = new SwerveModulePosition(frontRight.getDrivePosition(), new Rotation2d(frontRight.getTurningPosition()));
+        modulePositions[2] = new SwerveModulePosition(backLeft.getDrivePosition(), new Rotation2d(backLeft.getTurningPosition()));
+        modulePositions[3] = new SwerveModulePosition(backRight.getDrivePosition(), new Rotation2d(backRight.getTurningPosition()));
     }
 
     public void stopModules() {
