@@ -52,12 +52,13 @@ public class SwerveSubsystem extends SubsystemBase {
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
     private SwerveModulePosition[] modulePositions = new SwerveModulePosition[DriveConstants.kNumModules];
 
-    private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
-            new Rotation2d(0), modulePositions);
+    private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(
+        DriveConstants.kDriveKinematics,
+        getRotation2d(),  
+        getModulePositions()
+    );
 
     public SwerveSubsystem() {
-        getModulePositions();  // new By Phil.
-
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
@@ -91,18 +92,19 @@ public class SwerveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        getModulePositions();  // new By Phil.
-        odometer.update(getRotation2d(), modulePositions);
+        odometer.update(getRotation2d(), getModulePositions());
         SmartDashboard.putNumber("Robot Heading", getHeading());
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
     }
 
      
-    public void getModulePositions() {
-        modulePositions[0] = new SwerveModulePosition(frontLeft.getDrivePosition(), new Rotation2d(frontLeft.getTurningPosition()));
-        modulePositions[1] = new SwerveModulePosition(frontRight.getDrivePosition(), new Rotation2d(frontRight.getTurningPosition()));
-        modulePositions[2] = new SwerveModulePosition(backLeft.getDrivePosition(), new Rotation2d(backLeft.getTurningPosition()));
-        modulePositions[3] = new SwerveModulePosition(backRight.getDrivePosition(), new Rotation2d(backRight.getTurningPosition()));
+    public SwerveModulePosition[] getModulePositions() {
+        return new SwerveModulePosition[] {
+            frontLeft.getPosition(),
+            frontRight.getPosition(),
+            backLeft.getPosition(),
+            backRight.getPosition()
+        };
     }
     
 
