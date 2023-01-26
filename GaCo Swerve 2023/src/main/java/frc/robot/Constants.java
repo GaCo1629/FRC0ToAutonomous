@@ -20,6 +20,7 @@ public final class Constants {
 
     public static final class DriveConstants {
 
+        public static final int    kNumModules = 4;
         public static final double kTrackWidth = Units.inchesToMeters(21);  // Distance between right and left wheels
         public static final double kWheelBase = Units.inchesToMeters(25.5); // Distance between front and back wheels
 
