@@ -82,7 +82,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public Pose2d getPose() {
      return odometer.getPoseMeters();
-     // return new Pose2d();
     }
 
     public void resetOdometry(Pose2d pose) {
