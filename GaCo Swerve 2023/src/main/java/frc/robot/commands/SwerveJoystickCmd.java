@@ -3,6 +3,9 @@ package frc.robot.commands;
 import java.util.function.Supplier;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -10,8 +13,9 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.SwerveSubsystem;
-
 import org.photonvision.PhotonCamera;
+
+
 
 public class SwerveJoystickCmd extends CommandBase {
 
@@ -20,7 +24,7 @@ public class SwerveJoystickCmd extends CommandBase {
     private final Supplier<Boolean> fieldOrientedFunction, goToTargetFunction;
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
 
-    PhotonCamera camera = new PhotonCamera("photonvision");
+    PhotonCamera camera = new PhotonCamera("OV5647");
 
     public SwerveJoystickCmd(SwerveSubsystem swerveSubsystem,
             Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction, Supplier<Double> turningSpdFunction,
@@ -64,13 +68,35 @@ public class SwerveJoystickCmd extends CommandBase {
         ChassisSpeeds chassisSpeeds;
         var result = camera.getLatestResult();
 
+        // find an apriltag and extract robot 
+        if (result.hasTargets()) {
+            
+            Transform3d robotPosition = result.getBestTarget().getBestCameraToTarget();
+            double targetToRobotX = robotPosition.getX();
+            double targetToRobotY = robotPosition.getY();
+            double targetToRobotT = robotPosition.getRotation().toRotation2d().getDegrees();
+            double targetToRobotR = Math.hypot(targetToRobotX, targetToRobotY);
+            double RobotToTargetT = result.getBestTarget()
+
+            // Convert th
+            if (targetToRobotT < 0) 
+                targetToRobotT += 180;
+            else
+                targetToRobotT -= 180; 
+                
+            
+            SmartDashboard.putString("TX", String.format("%.2f", targetToRobotX));
+            SmartDashboard.putString("TY", String.format("%.2f", targetToRobotY));
+            SmartDashboard.putString("TT", String.format("%.2f", targetToRobotT));
+            SmartDashboard.putString("TR", String.format("%.2f", targetToRobotR));
+            
+        }
+
         //  Either Track to AprilTag, or Use manual inputs
-        if (goToTargetFunction.get() && result.hasTargets()) {
+        if (!goToTargetFunction.get() && result.hasTargets()) {
             // Vision allignment mode
 
-            // result.getBestTarget().
-
-            //SmartDashboard.putString("Taregt Pose", targetPose.toString());
+            
 
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
         } else {
