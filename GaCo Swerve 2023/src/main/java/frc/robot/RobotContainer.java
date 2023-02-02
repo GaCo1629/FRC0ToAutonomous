@@ -33,7 +33,8 @@ public class RobotContainer {
                 () -> -driverJoytick.getRawAxis(OIConstants.kDriverYAxis),
                 () -> driverJoytick.getRawAxis(OIConstants.kDriverXAxis),
                 () -> driverJoytick.getRawAxis(OIConstants.kDriverRotAxis),
-                () -> !driverJoytick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx)));
+                () -> !driverJoytick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx),
+                () -> !driverJoytick.getRawButton(OIConstants.kDriverGoToTarget) ));  // PSM
 
         configureButtonBindings();
     }

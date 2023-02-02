@@ -2,28 +2,35 @@ package frc.robot.commands;
 
 import java.util.function.Supplier;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.SwerveSubsystem;
 
+import org.photonvision.PhotonCamera;
+
 public class SwerveJoystickCmd extends CommandBase {
 
     private final SwerveSubsystem swerveSubsystem;
     private final Supplier<Double> xSpdFunction, ySpdFunction, turningSpdFunction;
-    private final Supplier<Boolean> fieldOrientedFunction;
+    private final Supplier<Boolean> fieldOrientedFunction, goToTargetFunction;
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
+
+    PhotonCamera camera = new PhotonCamera("photonvision");
 
     public SwerveJoystickCmd(SwerveSubsystem swerveSubsystem,
             Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction, Supplier<Double> turningSpdFunction,
-            Supplier<Boolean> fieldOrientedFunction) {
+            Supplier<Boolean> fieldOrientedFunction, Supplier<Boolean> goToTargetFunction) {
         this.swerveSubsystem = swerveSubsystem;
         this.xSpdFunction = xSpdFunction;
         this.ySpdFunction = ySpdFunction;
         this.turningSpdFunction = turningSpdFunction;
         this.fieldOrientedFunction = fieldOrientedFunction;
+        this.goToTargetFunction = goToTargetFunction;
         this.xLimiter = new SlewRateLimiter(DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
         this.yLimiter = new SlewRateLimiter(DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
         this.turningLimiter = new SlewRateLimiter(DriveConstants.kTeleDriveMaxAngularAccelerationUnitsPerSecond);
@@ -32,6 +39,7 @@ public class SwerveJoystickCmd extends CommandBase {
 
     @Override
     public void initialize() {
+        // Change this to match the name of your camera
     }
 
     @Override
@@ -54,14 +62,31 @@ public class SwerveJoystickCmd extends CommandBase {
 
         // 4. Construct desired chassis speeds
         ChassisSpeeds chassisSpeeds;
-        if (fieldOrientedFunction.get()) {
-            // Relative to field
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xSpeed, ySpeed, turningSpeed, swerveSubsystem.getRotation2d());
-        } else {
-            // Relative to robot
+        var result = camera.getLatestResult();
+
+        //  Either Track to AprilTag, or Use manual inputs
+        if (goToTargetFunction.get() && result.hasTargets()) {
+            // Vision allignment mode
+
+            // result.getBestTarget().
+
+            //SmartDashboard.putString("Taregt Pose", targetPose.toString());
+
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
+        } else {
+            if (fieldOrientedFunction.get()) {
+                // Relative to field
+                chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                        xSpeed, ySpeed, turningSpeed, swerveSubsystem.getRotation2d());
+            } else {
+                // Relative to robot
+                chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
+            }
         }
+
+        SmartDashboard.putString("X Speed", String.format("%.2f", xSpeed));
+        SmartDashboard.putString("Y Speed", String.format("%.2f", ySpeed));
+        SmartDashboard.putString("T Speed", String.format("%.2f", turningSpeed));
 
         // 5. Convert chassis speeds to individual module states
         SwerveModuleState[] moduleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
