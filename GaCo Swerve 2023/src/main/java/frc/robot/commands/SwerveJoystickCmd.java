@@ -1,6 +1,9 @@
 package frc.robot.commands;
 
 import java.util.function.Supplier;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,10 +15,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.SwerveSubsystem;
 import org.photonvision.PhotonCamera;
-
-
 
 public class SwerveJoystickCmd extends CommandBase {
 
@@ -68,38 +70,58 @@ public class SwerveJoystickCmd extends CommandBase {
         ChassisSpeeds chassisSpeeds;
         var result = camera.getLatestResult();
 
-        // find an apriltag and extract robot 
+        double targetToRobotX = 0;
+        double targetToRobotY = 0;
+        double targetToRobotT = 0;
+        double targetToRobotR = 0;
+
+        PIDController xController = new PIDController(AutoConstants.kPXController, 0, 0);
+        ProfiledPIDController thetaController = new ProfiledPIDController(
+                AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        // find an apriltag and extract robot
         if (result.hasTargets()) {
-            
+
             Transform3d robotPosition = result.getBestTarget().getBestCameraToTarget();
-            double targetToRobotX = robotPosition.getX();
-            double targetToRobotY = robotPosition.getY();
-            double targetToRobotT = robotPosition.getRotation().toRotation2d().getDegrees();
-            double targetToRobotR = Math.hypot(targetToRobotX, targetToRobotY);
-            double RobotToTargetT = result.getBestTarget()
+            targetToRobotX = robotPosition.getX();
+            targetToRobotY = robotPosition.getY();
+            targetToRobotT = robotPosition.getRotation().toRotation2d().getDegrees();
+            targetToRobotR = Math.hypot(targetToRobotX, targetToRobotY);
 
             // Convert th
-            if (targetToRobotT < 0) 
+            if (targetToRobotT < 0)
                 targetToRobotT += 180;
             else
-                targetToRobotT -= 180; 
-                
-            
+                targetToRobotT -= 180;
+
             SmartDashboard.putString("TX", String.format("%.2f", targetToRobotX));
             SmartDashboard.putString("TY", String.format("%.2f", targetToRobotY));
             SmartDashboard.putString("TT", String.format("%.2f", targetToRobotT));
             SmartDashboard.putString("TR", String.format("%.2f", targetToRobotR));
-            
+
         }
 
-        //  Either Track to AprilTag, or Use manual inputs
+        // Either Track to AprilTag, or Use manual inputs
         if (!goToTargetFunction.get() && result.hasTargets()) {
             // Vision allignment mode
-
+        
+            xController.setSetpoint(AutoConstants.kTargetStandoff);
+            double outputX = -xController.calculate(targetToRobotX) * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond;
             
 
+            thetaController.setGoal(0);
+            double outputT = thetaController.calculate(targetToRobotY);
+
+            xSpeed = outputX;
+            ySpeed = 0;
+            turningSpeed = outputT;
+            SmartDashboard.putString("Output", String.format("%.2f", outputX));
+            SmartDashboard.putString("OutputT", String.format("%.2f", outputT));
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
         } else {
+            xController.reset();
+            thetaController.reset(0);
             if (fieldOrientedFunction.get()) {
                 // Relative to field
                 chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
