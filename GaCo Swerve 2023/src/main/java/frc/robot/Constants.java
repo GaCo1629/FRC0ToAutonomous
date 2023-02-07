@@ -2,7 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
@@ -68,33 +67,22 @@ public final class Constants {
         public static final double kPhysicalMaxSpeedMetersPerSecond = 6;
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI;
 
-        public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond / 4;
-        public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = //
-                kPhysicalMaxAngularSpeedRadiansPerSecond / 4;
-        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 8;
-        public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 8;
+        public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond / 2;
+        public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond / 2;
+   
     }
 
     public static final class AutoConstants {
-        public static final double kMaxSpeedMetersPerSecond = DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 4;
-        public static final double kMaxAngularSpeedRadiansPerSecond = DriveConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 10;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-        public static final double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4;
-        public static final double kPXController = 1.0;
-        public static final double kPYController = 2.5;
-        public static final double kPThetaController = 1.0;
-        public static final double kTargetStandoff = 1.0;
+        public static final double kMaxSpeedMetersPerSecond = DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 2;
+        public static final double kMaxAngularSpeedRadiansPerSecond = DriveConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 5;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 10;
+        public static final double kMaxAngularAccelerationRadiansPerSecondSquared = 10 * Math.PI ;
+        public static final double kPXController = 2.5;
+        public static final double kPYController = 2.0;
+        public static final double kPHeadingController = 5;
+        public static final double kTargetStandoff = 0.5;
         public static final double kTargetStandoffDeadband = 0.02;
 
-        public static final TrapezoidProfile.Constraints kThetaControllerConstraints = //
-                new TrapezoidProfile.Constraints(
-                        kMaxAngularSpeedRadiansPerSecond,
-                        kMaxAngularAccelerationRadiansPerSecondSquared);
-
-        public static final TrapezoidProfile.Constraints kXControllerConstraints = //
-                new TrapezoidProfile.Constraints(
-                        1.0,
-                        0.2);
     }
 
     public static final class OIConstants {
