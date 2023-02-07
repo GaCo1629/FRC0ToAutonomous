@@ -68,12 +68,12 @@ public class SwerveJoystickCmd extends CommandBase {
 
         // 4. Construct desired chassis speeds
         ChassisSpeeds chassisSpeeds;
-        var result = camera.getLatestResult();
 
         double targetToRobotX = 0;
         double targetToRobotY = 0;
         double targetToRobotT = 0;
         double targetToRobotR = 0;
+        double targetToRobotB = 0;
 
         ProfiledPIDController xController = new ProfiledPIDController(
                 AutoConstants.kPXController, 0, 0, AutoConstants.kXControllerConstraints);
@@ -82,49 +82,58 @@ public class SwerveJoystickCmd extends CommandBase {
                 AutoConstants.kPYController, 0, 0, AutoConstants.kXControllerConstraints);
         yController.setTolerance(0.08);
         
-        ProfiledPIDController thetaController = new ProfiledPIDController(
+        ProfiledPIDController headingController = new ProfiledPIDController(
                 AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        headingController.enableContinuousInput(-Math.PI, Math.PI);
 
         // find an apriltag and extract robot
+        // Calculate and display Apriltag data here so we always have it.  Note:  May need to move to own subsystem.
+        var result = camera.getLatestResult();
         if (result.hasTargets()) {
 
             Transform3d robotPosition = result.getBestTarget().getBestCameraToTarget();
             targetToRobotX = robotPosition.getX();
             targetToRobotY = robotPosition.getY();
             targetToRobotT = robotPosition.getRotation().toRotation2d().getRadians();
+
+            // Calculate Range and Bearing to target
             targetToRobotR = Math.hypot(targetToRobotX, targetToRobotY);
+            targetToRobotB = Math.atan2(targetToRobotY, targetToRobotX);
 
-            // Convert th
+            // Invert direction of theta.
             if (targetToRobotT < 0)
-                targetToRobotT += 180;
+                targetToRobotT += Math.PI;
             else
-                targetToRobotT -= 180;
+                targetToRobotT -= Math.PI;
 
-            SmartDashboard.putString("TX", String.format("%.2f", targetToRobotX));
-            SmartDashboard.putString("TY", String.format("%.2f", targetToRobotY));
-            SmartDashboard.putString("TT", String.format("%.2f", targetToRobotT));
-            SmartDashboard.putString("TR", String.format("%.2f", targetToRobotR));
+            SmartDashboard.putNumber("TX", targetToRobotX);
+            SmartDashboard.putNumber("TY", targetToRobotY);
+            SmartDashboard.putNumber("TT", targetToRobotT);
 
+            SmartDashboard.putNumber("TR", targetToRobotR);
+            SmartDashboard.putNumber("TB", targetToRobotB);
         }
 
         // Either Track to AprilTag, or Use manual inputs
         if (!goToTargetFunction.get() && result.hasTargets()) {
             // Vision allignment mode
         
-            double outputX = -xController.calculate(targetToRobotX - AutoConstants.kTargetStandoff, 0);
+            double outputH = headingController.calculate(targetToRobotB, 0);
+            double outputX = -xController.calculate(targetToRobotR, AutoConstants.kTargetStandoff);
             double outputY = -yController.calculate(targetToRobotT, 0);
-            double outputT = thetaController.calculate(targetToRobotY, 0);
+
+            SmartDashboard.putNumber("TX P SP", xController.getSetpoint().position);
+            SmartDashboard.putNumber("TX V SP", xController.getSetpoint().velocity);
 
             xSpeed = outputX;
             ySpeed = outputY;
-            turningSpeed = outputT;
-            
+            turningSpeed = outputH;
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
+
         } else {
             xController.reset(AutoConstants.kTargetStandoff);
             yController.reset(0);
-            thetaController.reset(0);
+            headingController.reset(0);
             if (fieldOrientedFunction.get()) {
                 // Relative to field
                 chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
