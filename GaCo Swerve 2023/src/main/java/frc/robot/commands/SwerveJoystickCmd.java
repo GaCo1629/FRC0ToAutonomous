@@ -51,19 +51,19 @@ public class SwerveJoystickCmd extends CommandBase {
     @Override
     public void execute() {
         // 1. Get real-time joystick inputs
-        double xSpeed = xSpdFunction.get();
-        double ySpeed = ySpdFunction.get();
-        double turningSpeed = turningSpdFunction.get();
+        double xJoystick = xSpdFunction.get();
+        double yJoystick = ySpdFunction.get();
+        double turningJoystick = turningSpdFunction.get();
 
         // 2. Apply deadband
-        xSpeed = Math.abs(xSpeed) > OIConstants.kDeadband ? xSpeed : 0.0;
-        ySpeed = Math.abs(ySpeed) > OIConstants.kDeadband ? ySpeed : 0.0;
-        turningSpeed = Math.abs(turningSpeed) > OIConstants.kDeadband ? turningSpeed : 0.0;
+        xJoystick = Math.abs(xJoystick) > OIConstants.kDeadband ? xJoystick : 0.0;
+        yJoystick = Math.abs(yJoystick) > OIConstants.kDeadband ? yJoystick : 0.0;
+        turningJoystick = Math.abs(turningJoystick) > OIConstants.kDeadband ? turningJoystick : 0.0;
 
         // 3. Make the driving smoother
-        xSpeed = xLimiter.calculate(xSpeed) * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond;
-        ySpeed = yLimiter.calculate(ySpeed) * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond;
-        turningSpeed = turningLimiter.calculate(turningSpeed)
+        double xSpeed = xLimiter.calculate(xJoystick) * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond;
+        double ySpeed = yLimiter.calculate(yJoystick) * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond;
+        double turningSpeed = turningLimiter.calculate(turningJoystick)
                 * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond;
 
         // 4. Construct desired chassis speeds
@@ -75,7 +75,13 @@ public class SwerveJoystickCmd extends CommandBase {
         double targetToRobotT = 0;
         double targetToRobotR = 0;
 
-        PIDController xController = new PIDController(AutoConstants.kPXController, 0, 0);
+        ProfiledPIDController xController = new ProfiledPIDController(
+                AutoConstants.kPXController, 0, 0, AutoConstants.kXControllerConstraints);
+        
+        ProfiledPIDController yController = new ProfiledPIDController(
+                AutoConstants.kPYController, 0, 0, AutoConstants.kXControllerConstraints);
+        yController.setTolerance(0.08);
+        
         ProfiledPIDController thetaController = new ProfiledPIDController(
                 AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
@@ -86,7 +92,7 @@ public class SwerveJoystickCmd extends CommandBase {
             Transform3d robotPosition = result.getBestTarget().getBestCameraToTarget();
             targetToRobotX = robotPosition.getX();
             targetToRobotY = robotPosition.getY();
-            targetToRobotT = robotPosition.getRotation().toRotation2d().getDegrees();
+            targetToRobotT = robotPosition.getRotation().toRotation2d().getRadians();
             targetToRobotR = Math.hypot(targetToRobotX, targetToRobotY);
 
             // Convert th
@@ -106,21 +112,18 @@ public class SwerveJoystickCmd extends CommandBase {
         if (!goToTargetFunction.get() && result.hasTargets()) {
             // Vision allignment mode
         
-            xController.setSetpoint(AutoConstants.kTargetStandoff);
-            double outputX = -xController.calculate(targetToRobotX) * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond;
-            
-
-            thetaController.setGoal(0);
-            double outputT = thetaController.calculate(targetToRobotY);
+            double outputX = -xController.calculate(targetToRobotX - AutoConstants.kTargetStandoff, 0);
+            double outputY = -yController.calculate(targetToRobotT, 0);
+            double outputT = thetaController.calculate(targetToRobotY, 0);
 
             xSpeed = outputX;
-            ySpeed = 0;
+            ySpeed = outputY;
             turningSpeed = outputT;
-            SmartDashboard.putString("Output", String.format("%.2f", outputX));
-            SmartDashboard.putString("OutputT", String.format("%.2f", outputT));
+            
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
         } else {
-            xController.reset();
+            xController.reset(AutoConstants.kTargetStandoff);
+            yController.reset(0);
             thetaController.reset(0);
             if (fieldOrientedFunction.get()) {
                 // Relative to field
@@ -132,8 +135,8 @@ public class SwerveJoystickCmd extends CommandBase {
             }
         }
 
-        SmartDashboard.putString("X Speed", String.format("%.2f", xSpeed));
-        SmartDashboard.putString("Y Speed", String.format("%.2f", ySpeed));
+        SmartDashboard.putNumber("X Speed", xSpeed);
+        SmartDashboard.putNumber("Y Speed", ySpeed);
         SmartDashboard.putString("T Speed", String.format("%.2f", turningSpeed));
 
         // 5. Convert chassis speeds to individual module states
