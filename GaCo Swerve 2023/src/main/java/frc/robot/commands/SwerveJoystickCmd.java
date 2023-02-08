@@ -1,14 +1,12 @@
 package frc.robot.commands;
 
+import java.lang.ModuleLayer.Controller;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -27,6 +25,11 @@ public class SwerveJoystickCmd extends CommandBase {
     private final Supplier<Boolean> fieldOrientedFunction, goToTargetFunction;
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
     
+    ProfiledPIDController xController;
+    ProfiledPIDController yController;
+    ProfiledPIDController headingController;
+    boolean       PIDRunning = false;
+   
     PhotonCamera camera = new PhotonCamera("OV5647");
 
     public SwerveJoystickCmd(SwerveSubsystem swerveSubsystem,
@@ -42,6 +45,17 @@ public class SwerveJoystickCmd extends CommandBase {
         this.yLimiter = new SlewRateLimiter(AutoConstants.kMaxAccelerationMetersPerSecondSquared);
         this.turningLimiter = new SlewRateLimiter(AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared);
         addRequirements(swerveSubsystem);
+        xController = new ProfiledPIDController(AutoConstants.kPXController, 0, 0, 
+                          new Constraints(AutoConstants.kMaxSpeedMetersPerSecond,AutoConstants.kMaxAccelerationMetersPerSecondSquared));
+        
+        yController = new ProfiledPIDController(AutoConstants.kPYController, 0, 0, 
+                          new Constraints(AutoConstants.kMaxSpeedMetersPerSecond,AutoConstants.kMaxAccelerationMetersPerSecondSquared));
+        
+        headingController = new ProfiledPIDController(AutoConstants.kPHeadingController, 0, 0, 
+                          new Constraints(AutoConstants.kMaxAngularSpeedRadiansPerSecond,AutoConstants.kMaxAngularAccelerationRadiansPerSecondSquared));
+
+        headingController.enableContinuousInput(-Math.PI, Math.PI);
+        
     }
 
     @Override
@@ -75,16 +89,6 @@ public class SwerveJoystickCmd extends CommandBase {
         double targetToRobotR = 0;
         double targetToRobotB = 0;
 
-        PIDController xController = new PIDController(AutoConstants.kPXController, 0, 0);
-        xController.setTolerance(0.05);
-        
-        PIDController yController = new PIDController(AutoConstants.kPYController, 0, 0);
-        yController.setTolerance(0.10);
-        
-        PIDController headingController = new PIDController(AutoConstants.kPHeadingController, 0, 0);
-        headingController.enableContinuousInput(-Math.PI, Math.PI);
-        headingController.setTolerance(1);
-
         // find an apriltag and extract robot
         // Calculate and display Apriltag data here so we always have it.  Note:  May need to move to own subsystem.
         var result = camera.getLatestResult();
@@ -116,33 +120,39 @@ public class SwerveJoystickCmd extends CommandBase {
         // Either Track to AprilTag, or Use manual inputs
         if (!goToTargetFunction.get() && result.hasTargets()) {
             // Vision allignment mode
+
+            if (!PIDRunning) {
+                xController.reset(targetToRobotR);
+                yController.reset(targetToRobotT);
+                headingController.reset(targetToRobotB);
+                PIDRunning = true;
+            }
         
             double outputH = headingController.calculate(targetToRobotB, 0);
-            if (headingController.atSetpoint()) {
+            if (Math.abs(targetToRobotB) < 0.1) {
                 outputH = 0;
-            }
+            } 
 
             double outputX = -xController.calculate(targetToRobotR, AutoConstants.kTargetStandoff);
-            if (xController.atSetpoint()) {
+            if (Math.abs(targetToRobotR - AutoConstants.kTargetStandoff) < AutoConstants.kTargetStandoffDeadband) {
                 outputX = 0;
-            }
+            } 
             
             double outputY = -yController.calculate(targetToRobotT, 0);
-            if (yController.atSetpoint()) {
+            if (Math.abs(targetToRobotT) < 0.075) {
                 outputY = 0;
-            }
-            // Smooth Speeds
-            xSpeed = xLimiter.calculate(outputX);
-            ySpeed = yLimiter.calculate(outputY);
-            turningSpeed = turningLimiter.calculate(outputH);
+            } 
+           
+            xSpeed = outputX;
+            ySpeed = outputY;
+            turningSpeed = outputH;
 
             chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
 
         } else {
 
-            xController.reset();
-            yController.reset();
-            headingController.reset();
+
+            PIDRunning = false;
 
             // Smooth Speeds
             xSpeed = xLimiter.calculate(xSpeed);
@@ -161,7 +171,7 @@ public class SwerveJoystickCmd extends CommandBase {
 
         SmartDashboard.putNumber("X Speed", xSpeed);
         SmartDashboard.putNumber("Y Speed", ySpeed);
-        SmartDashboard.putString("T Speed", String.format("%.2f", turningSpeed));
+        SmartDashboard.putNumber("Turn Speed", turningSpeed);
 
         // 5. Convert chassis speeds to individual module states
         SwerveModuleState[] moduleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
