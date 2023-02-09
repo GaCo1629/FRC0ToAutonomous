@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.SwerveSubsystem;
 import org.photonvision.PhotonCamera;
@@ -27,7 +28,7 @@ public class SwerveJoystickCmd extends CommandBase {
     ProfiledPIDController headingController;
     boolean       PIDRunning = false;
    
-    PhotonCamera camera = new PhotonCamera("OV5647");
+    PhotonCamera camera = new PhotonCamera(VisionConstants.cameraName);
 
     public SwerveJoystickCmd(SwerveSubsystem swerveSubsystem,
             Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction, Supplier<Double> turningSpdFunction,
