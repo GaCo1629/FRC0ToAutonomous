@@ -35,20 +35,24 @@ public class RobotContainer {
                 () -> driverJoytick.getRawAxis(OIConstants.kDriverXAxis),
                 () -> driverJoytick.getRawAxis(OIConstants.kDriverRotAxis),
                 () -> !driverJoytick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx),
-                () -> !driverJoytick.getRawButton(OIConstants.kDriverGoToTarget) ));  // PSM
+                () -> driverJoytick.getRawButton(OIConstants.kDriverGoToTargetButtonIdx) ));  // PSM
 
         configureButtonBindings();
     }
 
     private void configureButtonBindings() {
-        new JoystickButton(driverJoytick, 2).whenPressed(() -> swerveSubsystem.zeroHeading());
+        new JoystickButton(driverJoytick, OIConstants.kDriverResetRobotHeadingButtonIdx).onTrue(resetRobotHeading());
+    }
+
+    public Command resetRobotHeading() {
+        return new InstantCommand(() -> swerveSubsystem.zeroHeading());
     }
 
     public Command getAutonomousCommand() {
         // 1. Create trajectory settings
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
-                AutoConstants.kMaxSpeedMetersPerSecond,
-                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+                AutoConstants.kAutoMaxSpeedMetersPerSecond,
+                AutoConstants.kAutoMaxAccelerationMetersPerSecondSquared)
                         .setKinematics(DriveConstants.kDriveKinematics);
 
         // 2. Generate trajectory

@@ -11,6 +11,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.ModuleConstants;
 
 public class SwerveSubsystem extends SubsystemBase {
     private final SwerveModule frontLeft = new SwerveModule(
@@ -50,7 +51,6 @@ public class SwerveSubsystem extends SubsystemBase {
             DriveConstants.kBackRightDriveAbsoluteEncoderReversed);
 
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
-    private SwerveModulePosition[] modulePositions = new SwerveModulePosition[DriveConstants.kNumModules];
 
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(
         DriveConstants.kDriveKinematics,
@@ -85,8 +85,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void resetOdometry(Pose2d pose) {
-        getModulePositions();  // new By Phil.
-        odometer.resetPosition(getRotation2d(), modulePositions, pose);  // Phil's best guess.
+        odometer.resetPosition(getRotation2d(), getModulePositions(), pose);  // Phil's best guess.
     }
 
     @Override
@@ -95,7 +94,6 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Robot Heading", getHeading());
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
     }
-
      
     public SwerveModulePosition[] getModulePositions() {
         return new SwerveModulePosition[] {
@@ -105,7 +103,6 @@ public class SwerveSubsystem extends SubsystemBase {
             backRight.getPosition()
         };
     }
-    
 
     public void stopModules() {
         frontLeft.stop();
@@ -115,7 +112,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, ModuleConstants.kPhysicalMaxSpeedMetersPerSecond);
         frontLeft.setDesiredState(desiredStates[0]);
         frontRight.setDesiredState(desiredStates[1]);
         backLeft.setDesiredState(desiredStates[2]);
