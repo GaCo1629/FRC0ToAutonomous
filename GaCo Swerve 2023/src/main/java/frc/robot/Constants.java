@@ -31,15 +31,15 @@ public final class Constants {
         public static final double kPTurning = 0.5;
 
         // Max Physical speed/accel
-        public static final double kPhysicalMaxSpeedMetersPerSecond = 3.7;
-        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 3 * 2 * Math.PI;
+        public static final double kPhysicalMaxSpeedMetersPerSecond = 6.0;
+        public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 4 * 2 * Math.PI;
     }
 
     public static final class DriveConstants {
 
         public static final int    kNumModules = 4;
-        public static final double kTrackWidth = Units.inchesToMeters(21);  // Distance between right and left wheels
-        public static final double kWheelBase = Units.inchesToMeters(25.5); // Distance between front and back wheels
+        public static final double kTrackWidth = Units.inchesToMeters(17.75);  // Distance between right and left wheels
+        public static final double kWheelBase = Units.inchesToMeters(19.25); // Distance between front and back wheels
 
         public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
                 new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
@@ -88,7 +88,7 @@ public final class Constants {
         public static final double kTeleMaxAngularSpeedRadiansPerSecond = ModuleConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 2;
 
         // Max Tele Drive Accels
-        public static final double kTeleMaxAccelerationMetersPerSecondSquared = kTeleMaxSpeedMetersPerSecond * 4;
+        public static final double kTeleMaxAccelerationMetersPerSecondSquared = kTeleMaxSpeedMetersPerSecond * 6;
         public static final double kTeleMaxAngularAccelerationRadiansPerSecondSquared = kTeleMaxAngularSpeedRadiansPerSecond * 4 ;
    
     }
@@ -96,14 +96,14 @@ public final class Constants {
     public static final class AutoConstants {
         // Max Tele Drive Speeds
         public static final double kAutoMaxSpeedMetersPerSecond = ModuleConstants.kPhysicalMaxSpeedMetersPerSecond / 2;
-        public static final double kAutoMaxAngularSpeedRadiansPerSecond = ModuleConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 4;
+        public static final double kAutoMaxAngularSpeedRadiansPerSecond = ModuleConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 3;
 
-        public static final double kAutoMaxAccelerationMetersPerSecondSquared = kAutoMaxSpeedMetersPerSecond * 4;
-        public static final double kAutoMaxAngularAccelerationRadiansPerSecondSquared = kAutoMaxAngularSpeedRadiansPerSecond * 4 ;
+        public static final double kAutoMaxAccelerationMetersPerSecondSquared = kAutoMaxSpeedMetersPerSecond * 6;
+        public static final double kAutoMaxAngularAccelerationRadiansPerSecondSquared = kAutoMaxAngularSpeedRadiansPerSecond * 6 ;
 
-        public static final double kPXController = 3;
-        public static final double kPYController = 2.0;
-        public static final double kPHeadingController = 5;
+        public static final double kPXController = 3.0;
+        public static final double kPYController = 1.8;
+        public static final double kPHeadingController = 6;
         public static final double kTargetStandoff = 0.5;
         public static final double kTargetStandoffDeadband = 0.02;
 
@@ -117,7 +117,7 @@ public final class Constants {
         public static final int kDriverRotAxis = 4;
         public static final int kDriverFieldOrientedButtonIdx = 1;
         public static final int kDriverGoToTargetButtonIdx = 5;  // PSM
-        public static final int kDriverResetRobotHeadingButtonIdx = 12;  // PSM
+        public static final int kDriverResetRobotHeadingButtonIdx = 8;  // PSM
 
         public static final double kDeadband = 0.05;
     }
