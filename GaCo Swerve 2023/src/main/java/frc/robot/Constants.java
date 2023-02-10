@@ -57,10 +57,10 @@ public final class Constants {
         public static final int kBackLeftTurningMotorPort = 6;
         public static final int kBackRightTurningMotorPort = 8;
 
-        public static final boolean kFrontLeftTurningEncoderReversed = true;
-        public static final boolean kFrontRightTurningEncoderReversed = true;
-        public static final boolean kBackLeftTurningEncoderReversed = true;
-        public static final boolean kBackRightTurningEncoderReversed = true;
+        public static final boolean kFrontLeftTurningEncoderReversed = false;
+        public static final boolean kFrontRightTurningEncoderReversed = false;
+        public static final boolean kBackLeftTurningEncoderReversed = false;
+        public static final boolean kBackRightTurningEncoderReversed = false;
 
         public static final boolean kFrontLeftDriveEncoderReversed = false;
         public static final boolean kFrontRightDriveEncoderReversed = false;
@@ -77,10 +77,10 @@ public final class Constants {
         public static final boolean kBackLeftDriveAbsoluteEncoderReversed = false;
         public static final boolean kBackRightDriveAbsoluteEncoderReversed = false;
 
-        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = 2.780 ;
-        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 4.0725;
-        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = 0.8043 ;
-        public static final double kBackRightDriveAbsoluteEncoderOffsetRad = 1.5254;
+        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad =  -2.1337 ; //2.780 ;
+        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = -3.772 ; //4.0725;
+        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = -5.517 ; //0.8043 ;
+        public static final double kBackRightDriveAbsoluteEncoderOffsetRad = -5.227 ; //1.5254;
 
 
         // Max Tele Drive Speeds
