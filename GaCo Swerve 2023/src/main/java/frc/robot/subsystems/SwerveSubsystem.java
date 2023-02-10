@@ -90,7 +90,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public double getHeading() {
-        return Math.IEEEremainder(gyro.getAngle(), 360);
+        return Math.IEEEremainder(-gyro.getAngle(), 360);
     }
 
     public Rotation2d getRotation2d() {
@@ -109,7 +109,7 @@ public class SwerveSubsystem extends SubsystemBase {
     public void periodic() {
         odometer.update(getRotation2d(), getModulePositions());
         Optional<EstimatedRobotPose> result =
-                pcw.getEstimatedGlobalPose(odometer.getEstimatedPosition());
+                pcw.getEstimatedGlobalPose(odometer.getEstimatedPosition()); 
 
         if (result.isPresent()) {
             EstimatedRobotPose camPose = result.get();
