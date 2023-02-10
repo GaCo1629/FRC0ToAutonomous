@@ -14,7 +14,7 @@ import frc.robot.Constants.ModuleConstants;
 
 public class SwerveModule {
 
-    private final CANSparkMax driveMotor;
+    public final CANSparkMax driveMotor;
     private final CANSparkMax turningMotor;
 
     private final RelativeEncoder driveEncoder;

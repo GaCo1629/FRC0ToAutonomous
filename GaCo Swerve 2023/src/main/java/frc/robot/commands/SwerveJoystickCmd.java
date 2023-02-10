@@ -171,6 +171,8 @@ public class SwerveJoystickCmd extends CommandBase {
 
         // 6. Output each module states to wheels
         swerveSubsystem.setModuleStates(moduleStates);
+
+        SmartDashboard.putBoolean("Left Inverted", swerveSubsystem.frontLeft.driveMotor.getInverted());
     }
 
     @Override
