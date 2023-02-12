@@ -90,8 +90,12 @@ public class SwerveModule {
     }
 
     public void setDesiredState(SwerveModuleState state) {
-        SmartDashboard.putString("Swerve[" + absoluteEncoder.getChannel() + "] state", state.toString());
-        SmartDashboard.putNumber("Angle[" + absoluteEncoder.getChannel() + "] state", getTurningPosition());
+        SmartDashboard.putString("Swerve[" + absoluteEncoder.getChannel() + "] CMD", state.toString());
+        SmartDashboard.putNumber("AngleP[" + absoluteEncoder.getChannel() + "] enc ", getTurningPosition());
+        SmartDashboard.putNumber("AngleS[" + absoluteEncoder.getChannel() + "] enc ", getTurningVelocity());
+        SmartDashboard.putNumber("DriveP[" + absoluteEncoder.getChannel() + "] enc ", getDrivePosition());
+        SmartDashboard.putNumber("DriveS[" + absoluteEncoder.getChannel() + "] enc ", getDriveVelocity());
+        SmartDashboard.putNumber("AbsRad[" + absoluteEncoder.getChannel() + "] annalog ", getAbsoluteEncoderRad());
         if (Math.abs(state.speedMetersPerSecond) < 0.001) {
             stop();
             return;

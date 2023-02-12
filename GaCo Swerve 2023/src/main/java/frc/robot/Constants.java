@@ -42,10 +42,10 @@ public final class Constants {
         public static final double kWheelBase = Units.inchesToMeters(19.25); // Distance between front and back wheels
 
         public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-                new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
                 new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-                new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-                new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+                new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
+                new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
 
         public static final int kFrontLeftDriveMotorPort = 1;
         public static final int kFrontRightDriveMotorPort = 3;
@@ -72,15 +72,15 @@ public final class Constants {
         public static final int kBackLeftDriveAbsoluteEncoderPort = 2;
         public static final int kBackRightDriveAbsoluteEncoderPort = 3;
 
-        public static final boolean kFrontLeftDriveAbsoluteEncoderReversed = false;
-        public static final boolean kFrontRightDriveAbsoluteEncoderReversed = false;
-        public static final boolean kBackLeftDriveAbsoluteEncoderReversed = false;
-        public static final boolean kBackRightDriveAbsoluteEncoderReversed = false;
+        public static final boolean kFrontLeftDriveAbsoluteEncoderReversed = true;
+        public static final boolean kFrontRightDriveAbsoluteEncoderReversed = true;
+        public static final boolean kBackLeftDriveAbsoluteEncoderReversed = true;
+        public static final boolean kBackRightDriveAbsoluteEncoderReversed = true;
 
-        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad =  -2.1337 ; //2.780 ;
-        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = -3.772 ; //4.0725;
-        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = -5.517 ; //0.8043 ;
-        public static final double kBackRightDriveAbsoluteEncoderOffsetRad = -5.227 ; //1.5254;
+        public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad  = 2.780 ;
+        public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 4.0725;
+        public static final double kBackLeftDriveAbsoluteEncoderOffsetRad   = 0.785 ;
+        public static final double kBackRightDriveAbsoluteEncoderOffsetRad  = 1.5254;
 
 
         // Max Tele Drive Speeds

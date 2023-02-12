@@ -68,7 +68,7 @@ public class SwerveJoystickCmd extends CommandBase {
         // 1. Get real-time joystick inputs
         double xJoystick = -xSpdFunction.get();
         double yJoystick = -ySpdFunction.get();
-        double turningJoystick = turningSpdFunction.get();
+        double turningJoystick = -turningSpdFunction.get();
 
         // 2. Apply deadband
         xJoystick = Math.abs(xJoystick) > OIConstants.kDeadband ? xJoystick : 0.0;
@@ -109,18 +109,28 @@ public class SwerveJoystickCmd extends CommandBase {
             else
                 targetToRobotT -= Math.PI;
 
-            //SmartDashboard.putNumber("TX", targetToRobotX);
-            //SmartDashboard.putNumber("TY", targetToRobotY);
+            SmartDashboard.putNumber("TX", targetToRobotX);
+            SmartDashboard.putNumber("TY", targetToRobotY);
             SmartDashboard.putNumber("TB", targetToRobotB);
             SmartDashboard.putNumber("TR", targetToRobotR);
             SmartDashboard.putNumber("TT", targetToRobotT);
         }
 
+        /* 
+        if (goToTargetFunction.get()) {
+            chassisSpeeds = new ChassisSpeeds(1, 1, 0);
+        } else {
+            chassisSpeeds = new ChassisSpeeds(0, 0, 0);
+            
+        }
+        */
+
+        
         // Either Track to AprilTag, or Use manual inputs
         if (goToTargetFunction.get() && result.hasTargets()) {
             // Vision allignment mode
 
-            // Load current position
+            // Load current position 
             if (!PIDRunning) {
                 xController.reset(targetToRobotR);
                 yController.reset(targetToRobotT);
@@ -128,7 +138,7 @@ public class SwerveJoystickCmd extends CommandBase {
                 PIDRunning = true;
             }
         
-            turningSpeed = headingController.calculate(targetToRobotB, 0);
+            turningSpeed = -headingController.calculate(targetToRobotB, 0);
             if (Math.abs(targetToRobotB) < 0.1) {
                 turningSpeed = 0;
             } 
@@ -138,7 +148,7 @@ public class SwerveJoystickCmd extends CommandBase {
                 xSpeed = 0;
             } 
             
-            ySpeed = -yController.calculate(targetToRobotT, 0);
+            ySpeed = yController.calculate(targetToRobotT, 0);
             if (Math.abs(targetToRobotT) < 0.075) {
                 ySpeed = 0;
             } 
@@ -152,15 +162,17 @@ public class SwerveJoystickCmd extends CommandBase {
             ySpeed = yLimiter.calculate(ySpeed);
             turningSpeed = turningLimiter.calculate(turningSpeed);
 
-            if (fieldOrientedFunction.get()) {
+            if (!fieldOrientedFunction.get()) {
                 // Relative to field
                 chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, turningSpeed, swerveSubsystem.getRotation2d().unaryMinus());
+                        xSpeed, ySpeed, turningSpeed, swerveSubsystem.getRotation2d());
             } else {
                 // Relative to robot
                 chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
             }
         }
+
+        
 
         SmartDashboard.putNumber("X Speed", xSpeed);
         SmartDashboard.putNumber("Y Speed", ySpeed);
