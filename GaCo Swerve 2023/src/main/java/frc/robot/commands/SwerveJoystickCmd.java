@@ -116,16 +116,7 @@ public class SwerveJoystickCmd extends CommandBase {
             SmartDashboard.putNumber("TT", targetToRobotT);
         }
 
-        /* 
-        if (goToTargetFunction.get()) {
-            chassisSpeeds = new ChassisSpeeds(1, 1, 0);
-        } else {
-            chassisSpeeds = new ChassisSpeeds(0, 0, 0);
-            
-        }
-        */
-
-        
+                
         // Either Track to AprilTag, or Use manual inputs
         if (goToTargetFunction.get() && result.hasTargets()) {
             // Vision allignment mode
