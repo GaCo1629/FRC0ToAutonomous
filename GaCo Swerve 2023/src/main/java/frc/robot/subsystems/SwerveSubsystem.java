@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.PhotonCameraWrapper;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
+import frc.robot.Constants.OIConstants;
 
 public class SwerveSubsystem extends SubsystemBase {
     public final SwerveModule frontLeft = new SwerveModule(
@@ -76,11 +77,17 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public double getHeading() {
-        return Math.IEEEremainder(-gyro.getAngle(), 360);
+        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle()), Math.PI * 2);
+    }
+
+    public boolean isNotRotating() {
+        SmartDashboard.putNumber("Rotate rate", gyro.getRate());
+
+        return (Math.abs(gyro.getRate()) < OIConstants.kNotRotating);
     }
 
     public Rotation2d getRotation2d() {
-        return Rotation2d.fromDegrees(getHeading());
+        return Rotation2d.fromRadians(getHeading());
     }
 
     public Pose2d getPose() {
@@ -102,7 +109,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
         }
 
-        SmartDashboard.putNumber("Robot Heading", getHeading());
+        SmartDashboard.putNumber("Robot Heading", Math.toDegrees(getHeading()));
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
     }
      

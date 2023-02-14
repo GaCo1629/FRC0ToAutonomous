@@ -98,12 +98,15 @@ public final class Constants {
         public static final double kAutoMaxSpeedMetersPerSecond = ModuleConstants.kPhysicalMaxSpeedMetersPerSecond / 2;
         public static final double kAutoMaxAngularSpeedRadiansPerSecond = ModuleConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 3;
 
-        public static final double kAutoMaxAccelerationMetersPerSecondSquared = kAutoMaxSpeedMetersPerSecond * 4;
-        public static final double kAutoMaxAngularAccelerationRadiansPerSecondSquared = kAutoMaxAngularSpeedRadiansPerSecond * 4 ;
+        public static final double kAutoMaxAccelerationMetersPerSecondSquared = kAutoMaxSpeedMetersPerSecond / 4;
+        public static final double kAutoMaxAngularAccelerationRadiansPerSecondSquared = kAutoMaxAngularSpeedRadiansPerSecond / 2 ;
 
         public static final double kPXController = 3.0;
         public static final double kPYController = 1.8;
         public static final double kPHeadingController = 6;
+        public static final double kPHeadingLockController = 6;
+        public static final double kIHeadingLockController = 0;
+        public static final double kDHeadingLockController = 0; 
         public static final double kTargetStandoff = 0.5;
         public static final double kTargetStandoffDeadband = 0.02;
 
@@ -117,10 +120,12 @@ public final class Constants {
         public static final int kDriverYAxis = 4;
         public static final int kDriverRotAxisLeft = 2;
         public static final int kDriverRotAxisRight = 3;
-        public static final int kDriverFieldOrientedButtonIdx = 1;
+        public static final int kDriverFieldOrientedButtonIdx = 6;
         public static final int kDriverGoToTargetButtonIdx = 5;  // PSM
         public static final int kDriverResetRobotHeadingButtonIdx = 8;  // PSM
 
         public static final double kDeadband = 0.05;
+
+        public static final double kNotRotating = 1.0 ;  // degrees per second
     }
 }

@@ -9,7 +9,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.ModuleConstants;
 
 public class SwerveModule {
@@ -90,12 +89,14 @@ public class SwerveModule {
     }
 
     public void setDesiredState(SwerveModuleState state) {
+        /*
         SmartDashboard.putString("Swerve[" + absoluteEncoder.getChannel() + "] CMD", state.toString());
         SmartDashboard.putNumber("AngleP[" + absoluteEncoder.getChannel() + "] enc ", getTurningPosition());
         SmartDashboard.putNumber("AngleS[" + absoluteEncoder.getChannel() + "] enc ", getTurningVelocity());
         SmartDashboard.putNumber("DriveP[" + absoluteEncoder.getChannel() + "] enc ", getDrivePosition());
         SmartDashboard.putNumber("DriveS[" + absoluteEncoder.getChannel() + "] enc ", getDriveVelocity());
         SmartDashboard.putNumber("AbsRad[" + absoluteEncoder.getChannel() + "] annalog ", getAbsoluteEncoderRad());
+        */
         if (Math.abs(state.speedMetersPerSecond) < 0.001) {
             stop();
             return;
