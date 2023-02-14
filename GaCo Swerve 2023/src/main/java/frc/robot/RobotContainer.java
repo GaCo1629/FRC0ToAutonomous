@@ -27,16 +27,13 @@ public class RobotContainer {
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
 
     private final Joystick driverJoystick = new Joystick(OIConstants.kDriverControllerPort);
+    private final Joystick coPilotJoystick = new Joystick(OIConstants.kCoPilotControllerPort);
 
     public RobotContainer() {
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
                 swerveSubsystem,
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis),
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis),
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisLeft),
-                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisRight),
-                () -> driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx),
-                () -> driverJoystick.getRawButton(OIConstants.kDriverGoToTargetButtonIdx) ));  // PSM
+                driverJoystick,
+                coPilotJoystick ));  // PSM
 
         configureButtonBindings();
     }

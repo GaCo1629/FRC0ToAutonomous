@@ -1,10 +1,9 @@
 package frc.robot.subsystems;
 
 import java.util.Optional;
-
 import org.photonvision.EstimatedRobotPose;
-
 import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.PhotonCameraWrapper;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
@@ -58,14 +58,10 @@ public class SwerveSubsystem extends SubsystemBase {
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);  
     private final PhotonCameraWrapper pcw = new PhotonCameraWrapper();
 
-    private final SwerveDrivePoseEstimator odometer =
-    new SwerveDrivePoseEstimator(DriveConstants.kDriveKinematics,
-                                getRotation2d(),  
-                                getModulePositions(), new Pose2d());
-
+    private final SwerveDrivePoseEstimator odometer =  new SwerveDrivePoseEstimator(
+                    DriveConstants.kDriveKinematics, getRotation2d(), getModulePositions(), new Pose2d());
     
     public SwerveSubsystem() {
-        
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
@@ -98,8 +94,7 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         odometer.update(getRotation2d(), getModulePositions());
-        Optional<EstimatedRobotPose> result =
-                pcw.getEstimatedGlobalPose(odometer.getEstimatedPosition()); 
+        Optional<EstimatedRobotPose> result = pcw.getEstimatedGlobalPose(odometer.getEstimatedPosition()); 
 
         if (result.isPresent()) {
             EstimatedRobotPose camPose = result.get();

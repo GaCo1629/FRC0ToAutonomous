@@ -35,7 +35,6 @@
  
 
  enum AprilTagFields {
-    k2022RapidReact("2022-rapidreact.json"),
     k2023ChargedUp("2023-chargedup.json");
   
     public static final String kBaseResourceDir = "/edu/wpi/first/apriltag/";
@@ -59,24 +58,15 @@
      public PhotonCameraWrapper() {
 
          // Set up a test arena
-         try {
-            atfl = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
-         } 
-         catch(Exception e) {
+        try {
+          atfl = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+        } catch(Exception e) {
+        }
 
-         }
-
-         // Forward Camera
-         photonCamera =
-                 new PhotonCamera(
-                         VisionConstants
-                                 .cameraName); // Change the name of your camera here to whatever it is in the
-         // PhotonVision UI.
- 
-         // Create pose estimator
-         photonPoseEstimator =
-                 new PhotonPoseEstimator(
-                         atfl, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, photonCamera, VisionConstants.robotToCam);
+        photonCamera = new PhotonCamera(VisionConstants.cameraName); 
+         
+        // Create pose estimator
+        photonPoseEstimator = new PhotonPoseEstimator(atfl, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, photonCamera, VisionConstants.robotToCam);
      }
  
      /**

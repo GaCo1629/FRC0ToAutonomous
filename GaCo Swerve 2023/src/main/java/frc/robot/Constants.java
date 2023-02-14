@@ -111,6 +111,7 @@ public final class Constants {
 
     public static final class OIConstants {
         public static final int kDriverControllerPort = 0;
+        public static final int kCoPilotControllerPort = 1;
 
         public static final int kDriverXAxis = 1;
         public static final int kDriverYAxis = 4;

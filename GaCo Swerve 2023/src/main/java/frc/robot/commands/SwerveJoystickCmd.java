@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
@@ -30,22 +31,19 @@ public class SwerveJoystickCmd extends CommandBase {
    
     PhotonCamera camera = new PhotonCamera(VisionConstants.cameraName);
 
-    public SwerveJoystickCmd(SwerveSubsystem swerveSubsystem,
-            Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction,
-            Supplier<Double> turningSpdLeftFunction, Supplier<Double> turningSpdRightFunction,
-            Supplier<Boolean> fieldOrientedFunction, Supplier<Boolean> goToTargetFunction) {
-        this.swerveSubsystem = swerveSubsystem;
+    public SwerveJoystickCmd(SwerveSubsystem aSwerveSubsystem, Joystick driverJoystick, Joystick coPilotJoystick) {
+        swerveSubsystem = aSwerveSubsystem;
+        xSpdFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis);
+        ySpdFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis);
+        turningSpdLeftFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisLeft);
+        turningSpdRightFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisRight);
+        fieldOrientedFunction = () -> driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx);
+        goToTargetFunction = () -> driverJoystick.getRawButton(OIConstants.kDriverGoToTargetButtonIdx);
 
-        this.xSpdFunction = xSpdFunction;
-        this.ySpdFunction = ySpdFunction;
-        this.turningSpdLeftFunction = turningSpdLeftFunction;
-        this.turningSpdRightFunction = turningSpdRightFunction;
-        this.fieldOrientedFunction = fieldOrientedFunction;
-        this.goToTargetFunction = goToTargetFunction;
+        xLimiter = new SlewRateLimiter(DriveConstants.kTeleMaxAccelerationMetersPerSecondSquared);
+        yLimiter = new SlewRateLimiter(DriveConstants.kTeleMaxAccelerationMetersPerSecondSquared);
+        turningLimiter = new SlewRateLimiter(AutoConstants.kAutoMaxAngularAccelerationRadiansPerSecondSquared);
 
-        this.xLimiter = new SlewRateLimiter(DriveConstants.kTeleMaxAccelerationMetersPerSecondSquared);
-        this.yLimiter = new SlewRateLimiter(DriveConstants.kTeleMaxAccelerationMetersPerSecondSquared);
-        this.turningLimiter = new SlewRateLimiter(AutoConstants.kAutoMaxAngularAccelerationRadiansPerSecondSquared);
         addRequirements(swerveSubsystem);
     
         xController = new ProfiledPIDController(AutoConstants.kPXController, 0, 0, 
@@ -91,7 +89,7 @@ public class SwerveJoystickCmd extends CommandBase {
         double targetToRobotR = 0;
         double targetToRobotB = 0;
 
-        // find an apriltag and extract robot
+        // find an apriltag and extract robot position
         // Calculate and display Apriltag data here so we always have it.  Note:  May need to move to own subsystem.
         var result = camera.getLatestResult();
         if (result.hasTargets()) {
@@ -111,13 +109,12 @@ public class SwerveJoystickCmd extends CommandBase {
             else
                 targetToRobotT -= Math.PI;
 
-            SmartDashboard.putNumber("TX", targetToRobotX);
-            SmartDashboard.putNumber("TY", targetToRobotY);
-            SmartDashboard.putNumber("TB", targetToRobotB);
-            SmartDashboard.putNumber("TR", targetToRobotR);
-            SmartDashboard.putNumber("TT", targetToRobotT);
+            // SmartDashboard.putNumber("TX", targetToRobotX);
+            // SmartDashboard.putNumber("TY", targetToRobotY);
+            // SmartDashboard.putNumber("TB", targetToRobotB);
+            // SmartDashboard.putNumber("TR", targetToRobotR);
+            // SmartDashboard.putNumber("TT", targetToRobotT);
         }
-
                 
         // Either Track to AprilTag, or Use manual inputs
         if (goToTargetFunction.get() && result.hasTargets()) {
@@ -165,19 +162,15 @@ public class SwerveJoystickCmd extends CommandBase {
             }
         }
 
-        
-
-        SmartDashboard.putNumber("X Speed", xSpeed);
-        SmartDashboard.putNumber("Y Speed", ySpeed);
-        SmartDashboard.putNumber("Turn Speed", turningSpeed);
+        // SmartDashboard.putNumber("X Speed", xSpeed);
+        // SmartDashboard.putNumber("Y Speed", ySpeed);
+        // SmartDashboard.putNumber("Turn Speed", turningSpeed);
 
         // 5. Convert chassis speeds to individual module states
         SwerveModuleState[] moduleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
 
         // 6. Output each module states to wheels
         swerveSubsystem.setModuleStates(moduleStates);
-
-        SmartDashboard.putBoolean("Left Inverted", swerveSubsystem.frontLeft.driveMotor.getInverted());
     }
 
     @Override
