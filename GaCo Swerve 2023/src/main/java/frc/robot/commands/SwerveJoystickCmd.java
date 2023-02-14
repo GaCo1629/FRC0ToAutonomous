@@ -19,7 +19,7 @@ import org.photonvision.PhotonCamera;
 public class SwerveJoystickCmd extends CommandBase {
 
     private final SwerveSubsystem swerveSubsystem;
-    private final Supplier<Double> xSpdFunction, ySpdFunction, turningSpdFunction;
+    private final Supplier<Double> xSpdFunction, ySpdFunction, turningSpdLeftFunction, turningSpdRightFunction;
     private final Supplier<Boolean> fieldOrientedFunction, goToTargetFunction;
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
     
@@ -31,13 +31,15 @@ public class SwerveJoystickCmd extends CommandBase {
     PhotonCamera camera = new PhotonCamera(VisionConstants.cameraName);
 
     public SwerveJoystickCmd(SwerveSubsystem swerveSubsystem,
-            Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction, Supplier<Double> turningSpdFunction,
+            Supplier<Double> xSpdFunction, Supplier<Double> ySpdFunction,
+            Supplier<Double> turningSpdLeftFunction, Supplier<Double> turningSpdRightFunction,
             Supplier<Boolean> fieldOrientedFunction, Supplier<Boolean> goToTargetFunction) {
         this.swerveSubsystem = swerveSubsystem;
 
         this.xSpdFunction = xSpdFunction;
         this.ySpdFunction = ySpdFunction;
-        this.turningSpdFunction = turningSpdFunction;
+        this.turningSpdLeftFunction = turningSpdLeftFunction;
+        this.turningSpdRightFunction = turningSpdRightFunction;
         this.fieldOrientedFunction = fieldOrientedFunction;
         this.goToTargetFunction = goToTargetFunction;
 
@@ -68,7 +70,7 @@ public class SwerveJoystickCmd extends CommandBase {
         // 1. Get real-time joystick inputs
         double xJoystick = -xSpdFunction.get();
         double yJoystick = -ySpdFunction.get();
-        double turningJoystick = -turningSpdFunction.get();
+        double turningJoystick = turningSpdLeftFunction.get() - turningSpdRightFunction.get();
 
         // 2. Apply deadband
         xJoystick = Math.abs(xJoystick) > OIConstants.kDeadband ? xJoystick : 0.0;

@@ -6,12 +6,10 @@ import org.photonvision.EstimatedRobotPose;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -65,15 +63,7 @@ public class SwerveSubsystem extends SubsystemBase {
                                 getRotation2d(),  
                                 getModulePositions(), new Pose2d());
 
-    /* 
-    private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(
-        DriveConstants.kDriveKinematics,
-        getRotation2d(),  
-        getModulePositions()
-        
-    );
-     */
-
+    
     public SwerveSubsystem() {
         
         new Thread(() -> {

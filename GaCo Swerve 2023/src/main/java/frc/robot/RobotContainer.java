@@ -26,22 +26,23 @@ public class RobotContainer {
 
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
 
-    private final Joystick driverJoytick = new Joystick(OIConstants.kDriverControllerPort);
+    private final Joystick driverJoystick = new Joystick(OIConstants.kDriverControllerPort);
 
     public RobotContainer() {
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
                 swerveSubsystem,
-                () -> driverJoytick.getRawAxis(OIConstants.kDriverYAxis),
-                () -> driverJoytick.getRawAxis(OIConstants.kDriverXAxis),
-                () -> driverJoytick.getRawAxis(OIConstants.kDriverRotAxis),
-                () -> driverJoytick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx),
-                () -> driverJoytick.getRawButton(OIConstants.kDriverGoToTargetButtonIdx) ));  // PSM
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis),
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis),
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisLeft),
+                () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisRight),
+                () -> driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx),
+                () -> driverJoystick.getRawButton(OIConstants.kDriverGoToTargetButtonIdx) ));  // PSM
 
         configureButtonBindings();
     }
 
     private void configureButtonBindings() {
-        new JoystickButton(driverJoytick, OIConstants.kDriverResetRobotHeadingButtonIdx).onTrue(resetRobotHeading());
+        new JoystickButton(driverJoystick, OIConstants.kDriverResetRobotHeadingButtonIdx).onTrue(resetRobotHeading());
     }
 
     public Command resetRobotHeading() {
