@@ -23,6 +23,7 @@ public class SwerveJoystickCmd extends CommandBase {
     private final Supplier<Double> xSpdFunction, ySpdFunction, turningSpdLeftFunction, turningSpdRightFunction;
     private final Supplier<Boolean> fieldOrientedFunction, goToTargetFunction;
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
+    private Joystick driverJoystick, copilotJoystick;
     
     ProfiledPIDController xController;
     ProfiledPIDController yController;
@@ -31,8 +32,10 @@ public class SwerveJoystickCmd extends CommandBase {
    
     PhotonCamera camera = new PhotonCamera(VisionConstants.cameraName);
 
-    public SwerveJoystickCmd(SwerveSubsystem aSwerveSubsystem, Joystick driverJoystick, Joystick coPilotJoystick) {
-        swerveSubsystem = aSwerveSubsystem;
+    public SwerveJoystickCmd(SwerveSubsystem SwerveSubsystem, Joystick driverJoystick, Joystick copilotJoystick) {
+        this.swerveSubsystem = SwerveSubsystem;
+        this.driverJoystick = driverJoystick;
+        this.copilotJoystick = copilotJoystick;
         xSpdFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis);
         ySpdFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis);
         turningSpdLeftFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisLeft);
@@ -65,15 +68,14 @@ public class SwerveJoystickCmd extends CommandBase {
     @Override
     public void execute() {
 
+        if (driverJoystick.getRawButtonPressed(OIConstants.kDriverResetRobotHeadingButtonIdx)){
+                    swerveSubsystem.zeroHeading();
+        }
+    
         // 1. Get real-time joystick inputs
-        double xJoystick = -xSpdFunction.get();
-        double yJoystick = -ySpdFunction.get();
-        double turningJoystick = turningSpdLeftFunction.get() - turningSpdRightFunction.get();
-
-        // 2. Apply deadband
-        xJoystick = Math.abs(xJoystick) > OIConstants.kDeadband ? xJoystick : 0.0;
-        yJoystick = Math.abs(yJoystick) > OIConstants.kDeadband ? yJoystick : 0.0;
-        turningJoystick = Math.abs(turningJoystick) > OIConstants.kDeadband ? turningJoystick : 0.0;
+        double xJoystick = applyDeadband( -xSpdFunction.get(), OIConstants.kDeadband);
+        double yJoystick = applyDeadband( -ySpdFunction.get(), OIConstants.kDeadband);
+        double turningJoystick = applyDeadband(turningSpdLeftFunction.get() - turningSpdRightFunction.get(), OIConstants.kDeadband);
 
         // 3. Convert to real world units
         double xSpeed = xJoystick * DriveConstants.kTeleMaxSpeedMetersPerSecond;
@@ -104,16 +106,21 @@ public class SwerveJoystickCmd extends CommandBase {
             targetToRobotB = Math.atan2(targetToRobotY, targetToRobotX);
 
             // Invert direction of theta.
-            if (targetToRobotT < 0)
+            if (targetToRobotT < 0) {
                 targetToRobotT += Math.PI;
-            else
-                targetToRobotT -= Math.PI;
-
+            }  else {
+                targetToRobotT -= Math.PI;   
+            }       
+            targetToRobotT *= -1 ;
+   
             // SmartDashboard.putNumber("TX", targetToRobotX);
             // SmartDashboard.putNumber("TY", targetToRobotY);
             // SmartDashboard.putNumber("TB", targetToRobotB);
             // SmartDashboard.putNumber("TR", targetToRobotR);
-            // SmartDashboard.putNumber("TT", targetToRobotT);
+            SmartDashboard.putNumber("TT (r)", targetToRobotT);
+            SmartDashboard.putNumber("TT (d)", Math.toDegrees(targetToRobotT));
+
+
         }
                 
         // Either Track to AprilTag, or Use manual inputs
@@ -138,7 +145,7 @@ public class SwerveJoystickCmd extends CommandBase {
                 xSpeed = 0;
             } 
             
-            ySpeed = yController.calculate(targetToRobotT, 0);
+            ySpeed = -yController.calculate(targetToRobotT, 0);
             if (Math.abs(targetToRobotT) < 0.075) {
                 ySpeed = 0;
             } 
@@ -181,5 +188,10 @@ public class SwerveJoystickCmd extends CommandBase {
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    private double applyDeadband(double value, double deadband) {
+        return  (Math.abs(value) < deadband) ? 0 : Math.signum(value) * (Math.abs(value) - deadband)  / (1 - deadband );
+        
     }
 }

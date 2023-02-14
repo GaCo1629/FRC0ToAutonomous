@@ -30,17 +30,9 @@ public class RobotContainer {
     private final Joystick coPilotJoystick = new Joystick(OIConstants.kCoPilotControllerPort);
 
     public RobotContainer() {
-        swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
-                swerveSubsystem,
-                driverJoystick,
-                coPilotJoystick ));  // PSM
-
-        configureButtonBindings();
-    }
-
-    private void configureButtonBindings() {
+        swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(swerveSubsystem, driverJoystick, coPilotJoystick ));  
         new JoystickButton(driverJoystick, OIConstants.kDriverResetRobotHeadingButtonIdx).onTrue(resetRobotHeading());
-    }
+     }
 
     public Command resetRobotHeading() {
         return new InstantCommand(() -> swerveSubsystem.zeroHeading());
