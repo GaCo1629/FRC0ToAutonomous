@@ -98,8 +98,8 @@ public final class Constants {
         public static final double kAutoMaxSpeedMetersPerSecond = ModuleConstants.kPhysicalMaxSpeedMetersPerSecond / 2;
         public static final double kAutoMaxAngularSpeedRadiansPerSecond = ModuleConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 3;
 
-        public static final double kAutoMaxAccelerationMetersPerSecondSquared = kAutoMaxSpeedMetersPerSecond / 4;
-        public static final double kAutoMaxAngularAccelerationRadiansPerSecondSquared = kAutoMaxAngularSpeedRadiansPerSecond / 2 ;
+        public static final double kAutoMaxAccelerationMetersPerSecondSquared = kAutoMaxSpeedMetersPerSecond * 2;
+        public static final double kAutoMaxAngularAccelerationRadiansPerSecondSquared = kAutoMaxAngularSpeedRadiansPerSecond  ;
 
         public static final double kPXController = 3.0;
         public static final double kPYController = 1.8;

@@ -77,10 +77,14 @@ public class SwerveJoystickCmd extends CommandBase {
     @Override
     public void execute() {
 
+
         if (driverJoystick.getRawButtonPressed(OIConstants.kDriverResetRobotHeadingButtonIdx)){
                     swerveSubsystem.zeroHeading();
                     headingSetpoint = 0;
+                    headingLockController.reset(0);
         }
+
+        double currentHeading = swerveSubsystem.getHeading();
     
         // 1. Get real-time joystick inputs
         double xJoystick = applyDeadband( -xSpdFunction.get(), OIConstants.kDeadband);
@@ -98,6 +102,7 @@ public class SwerveJoystickCmd extends CommandBase {
         double targetToRobotX = 0;
         double targetToRobotY = 0;
         double targetToRobotT = 0;
+
         double targetToRobotR = 0;
         double targetToRobotB = 0;
 
@@ -172,12 +177,16 @@ public class SwerveJoystickCmd extends CommandBase {
             //Directional Buttons
             if (driverJoystick.getRawButtonPressed(1)) {
                 headingSetpoint = Math.PI;
+                headingLockController.reset(currentHeading);
             } else if (driverJoystick.getRawButtonPressed(2)) {
                 headingSetpoint = -Math.PI / 2;
+                headingLockController.reset(currentHeading);
             } else if (driverJoystick.getRawButtonPressed(3)) {
                 headingSetpoint = Math.PI /2;
+                headingLockController.reset(currentHeading);
             } else if (driverJoystick.getRawButtonPressed(4)) {
                 headingSetpoint = 0;
+                headingLockController.reset(currentHeading);
             }
             
 
@@ -187,21 +196,17 @@ public class SwerveJoystickCmd extends CommandBase {
                 headingLocked = false;
             } else if (!headingLocked && swerveSubsystem.isNotRotating()) {
                 headingLocked = true;
-                headingSetpoint = swerveSubsystem.getHeading();
+                headingSetpoint = currentHeading;
+                headingLockController.reset(currentHeading);
             }
 
             if (headingLocked) {
-                double headingError =  headingSetpoint - swerveSubsystem.getHeading();
-                turningSpeed = -headingLockController.calculate(headingError, 0);
-                if (turningSpeed > 5) {
-                    turningSpeed = 5;
-                } else if (turningSpeed < -5) {
-                    turningSpeed = -5;
-                }
+
+                turningSpeed = headingLockController.calculate(currentHeading, headingSetpoint);
                 if (Math.abs(turningSpeed) < 0.1) {
                     turningSpeed = 0;
                 } 
-                SmartDashboard.putNumber("Heading Error", headingError);
+                SmartDashboard.putNumber("Heading Error", currentHeading - headingSetpoint);
             }
 
             SmartDashboard.putBoolean("Heading Locked", headingLocked);
