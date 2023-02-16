@@ -33,6 +33,7 @@ public class SwerveJoystickCmd extends CommandBase {
     ProfiledPIDController headingLockController;
     boolean PIDRunning = false;
     boolean headingLocked = false;
+    double  currentHeading = 0;
     double  headingSetpoint = 0;   
    
     PhotonCamera camera = new PhotonCamera(VisionConstants.cameraName);
@@ -71,21 +72,22 @@ public class SwerveJoystickCmd extends CommandBase {
 
     @Override
     public void initialize() {
-        // Change this to match the name of your camera
+        // Set the current heeding as the 
+        currentHeading = swerveSubsystem.getHeading();
+        lockCurrentHeading();
     }
 
     @Override
     public void execute() {
 
+        currentHeading = swerveSubsystem.getHeading();  // just read once so gyro is not red repeathedly
 
         if (driverJoystick.getRawButtonPressed(OIConstants.kDriverResetRobotHeadingButtonIdx)){
                     swerveSubsystem.zeroHeading();
-                    headingSetpoint = 0;
-                    headingLockController.reset(0);
+                    currentHeading = 0;
+                    lockCurrentHeading();
         }
-
-        double currentHeading = swerveSubsystem.getHeading();
-    
+   
         // 1. Get real-time joystick inputs
         double xJoystick = applyDeadband( -xSpdFunction.get(), OIConstants.kDeadband);
         double yJoystick = applyDeadband( -ySpdFunction.get(), OIConstants.kDeadband);
@@ -177,17 +179,13 @@ public class SwerveJoystickCmd extends CommandBase {
 
             //Directional Buttons
             if (driverJoystick.getRawButtonPressed(1)) {
-                headingSetpoint = Math.PI;
-                headingLockController.reset(currentHeading);
+                newHeadingSetpoint(Math.PI);
             } else if (driverJoystick.getRawButtonPressed(2)) {
-                headingSetpoint = -Math.PI / 2;
-                headingLockController.reset(currentHeading);
+                newHeadingSetpoint(-Math.PI / 2);
             } else if (driverJoystick.getRawButtonPressed(3)) {
-                headingSetpoint = Math.PI /2;
-                headingLockController.reset(currentHeading);
+                newHeadingSetpoint(Math.PI / 2);
             } else if (driverJoystick.getRawButtonPressed(4)) {
-                headingSetpoint = 0;
-                headingLockController.reset(currentHeading);
+                newHeadingSetpoint(0);
             }
             
 
@@ -197,8 +195,7 @@ public class SwerveJoystickCmd extends CommandBase {
                 headingLocked = false;
             } else if (!headingLocked && swerveSubsystem.isNotRotating()) {
                 headingLocked = true;
-                headingSetpoint = currentHeading;
-                headingLockController.reset(currentHeading);
+                lockCurrentHeading(currentHeading); 
             }
 
             if (headingLocked) {
@@ -243,6 +240,15 @@ public class SwerveJoystickCmd extends CommandBase {
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    public void newHeadingSetpoint(double newSetpoint) {
+        headingSetpoint = newSetpoint;
+        headingLockController.reset(currentHeading);
+    }
+
+    public void lockCurrentHeading() {
+        newHeadingSetpoint(currentHeading);
     }
 
     private double applyDeadband(double value, double deadband) {
