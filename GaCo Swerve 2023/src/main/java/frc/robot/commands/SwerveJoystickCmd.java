@@ -9,7 +9,9 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveConstants;
@@ -35,7 +37,9 @@ public class SwerveJoystickCmd extends CommandBase {
     boolean headingLocked = false;
     double  currentHeading = 0;
     double  headingSetpoint = 0;   
-   
+    Alliance ourAlliance = Alliance.Red;
+
+       
     PhotonCamera camera = new PhotonCamera(VisionConstants.cameraName);
 
     public SwerveJoystickCmd(SwerveSubsystem SwerveSubsystem, Joystick driverJoystick, Joystick copilotJoystick) {
@@ -75,17 +79,18 @@ public class SwerveJoystickCmd extends CommandBase {
         // Set the current heeding as the 
         currentHeading = swerveSubsystem.getHeading();
         lockCurrentHeading();
+
+        ourAlliance = DriverStation.getAlliance();
     }
 
     @Override
     public void execute() {
 
-        currentHeading = swerveSubsystem.getHeading();  // just read once so gyro is not red repeathedly
+        currentHeading = swerveSubsystem.getHeading();  // just read once so gyro is not read repeatedly
 
         if (driverJoystick.getRawButtonPressed(OIConstants.kDriverResetRobotHeadingButtonIdx)){
-                    swerveSubsystem.zeroHeading();
-                    currentHeading = 0;
-                    lockCurrentHeading();
+            currentHeading = swerveSubsystem.resetGyroToZero();;
+            lockCurrentHeading();
         }
    
         // 1. Get real-time joystick inputs
@@ -178,24 +183,35 @@ public class SwerveJoystickCmd extends CommandBase {
             turningSpeed = turningLimiter.calculate(turningSpeed);
 
             //Directional Buttons
-            if (driverJoystick.getRawButtonPressed(1)) {
-                newHeadingSetpoint(Math.PI);
-            } else if (driverJoystick.getRawButtonPressed(2)) {
-                newHeadingSetpoint(-Math.PI / 2);
-            } else if (driverJoystick.getRawButtonPressed(3)) {
-                newHeadingSetpoint(Math.PI / 2);
-            } else if (driverJoystick.getRawButtonPressed(4)) {
-                newHeadingSetpoint(0);
+            if (DriverStation.getAlliance() == Alliance.Red) {
+                if (driverJoystick.getRawButtonPressed(1)) {
+                    newHeadingSetpoint(0);
+                } else if (driverJoystick.getRawButtonPressed(2)) {
+                    newHeadingSetpoint(Math.PI / 2);
+                } else if (driverJoystick.getRawButtonPressed(3)) {
+                    newHeadingSetpoint(-Math.PI / 2);
+                } else if (driverJoystick.getRawButtonPressed(4)) {
+                    newHeadingSetpoint(Math.PI);
+                }
+            } else {
+                if (driverJoystick.getRawButtonPressed(1)) {
+                    newHeadingSetpoint(Math.PI);
+                } else if (driverJoystick.getRawButtonPressed(2)) {
+                    newHeadingSetpoint(-Math.PI / 2);
+                } else if (driverJoystick.getRawButtonPressed(3)) {
+                    newHeadingSetpoint(Math.PI / 2);
+                } else if (driverJoystick.getRawButtonPressed(4)) {
+                    newHeadingSetpoint(0);
+                }
             }
-            
+                
 
             // Check Auto Heading
-
             if (Math.abs(turningSpeed) > 0.01) {
                 headingLocked = false;
             } else if (!headingLocked && swerveSubsystem.isNotRotating()) {
                 headingLocked = true;
-                lockCurrentHeading(currentHeading); 
+                lockCurrentHeading(); 
             }
 
             if (headingLocked) {
@@ -204,7 +220,6 @@ public class SwerveJoystickCmd extends CommandBase {
                 if (Math.abs(turningSpeed) < 0.1) {
                     turningSpeed = 0;
                 } 
-                SmartDashboard.putNumber("Heading Error", currentHeading - headingSetpoint);
             }
 
             SmartDashboard.putBoolean("Heading Locked", headingLocked);
@@ -214,7 +229,7 @@ public class SwerveJoystickCmd extends CommandBase {
             if (!fieldOrientedFunction.get()) {
                 // Relative to field
                 chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, turningSpeed, swerveSubsystem.getRotation2d());
+                        xSpeed, ySpeed, turningSpeed, swerveSubsystem.getFCDRotation2d());
             } else {
                 // Relative to robot
                 chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);

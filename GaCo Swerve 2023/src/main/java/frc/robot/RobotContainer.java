@@ -31,13 +31,9 @@ public class RobotContainer {
 
     public RobotContainer() {
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(swerveSubsystem, driverJoystick, coPilotJoystick ));  
-        new JoystickButton(driverJoystick, OIConstants.kDriverResetRobotHeadingButtonIdx).onTrue(resetRobotHeading());
-     }
-
-    public Command resetRobotHeading() {
-        return new InstantCommand(() -> swerveSubsystem.zeroHeading());
     }
 
+    
     public Command getAutonomousCommand() {
         // 1. Create trajectory settings
         TrajectoryConfig trajectoryConfig = new TrajectoryConfig(

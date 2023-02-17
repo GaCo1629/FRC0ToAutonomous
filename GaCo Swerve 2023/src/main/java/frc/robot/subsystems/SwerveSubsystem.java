@@ -4,7 +4,9 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -57,6 +59,9 @@ public class SwerveSubsystem extends SubsystemBase {
             DriveConstants.kBackRightDriveAbsoluteEncoderReversed);
 
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);  
+    private double gyro2FieldOffset = 0;
+    private double gyro2FCDOffset = 0;
+    
     private final PhotonCameraWrapper pcw = new PhotonCameraWrapper();
 
     private final SwerveDrivePoseEstimator odometer =  new SwerveDrivePoseEstimator(
@@ -66,18 +71,31 @@ public class SwerveSubsystem extends SubsystemBase {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
-                zeroHeading();
+                resetGyroToZero();
             } catch (Exception e) {
             }
         }).start();
     }
 
-    public void zeroHeading() {
+    public double resetGyroToZero() {
         gyro.reset();
+        if (DriverStation.getAlliance() == Alliance.Red){
+            gyro2FieldOffset = 0.0;
+            gyro2FCDOffset = Math.PI;
+        } else {
+            gyro2FieldOffset = Math.PI;  
+            gyro2FCDOffset = 0.0; 
+        }
+
+        return getHeading();
     }
 
     public double getHeading() {
-        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle()), Math.PI * 2);
+        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle() + gyro2FieldOffset), Math.PI * 2);
+    }
+
+    public double getFCDHeading() {
+        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle() + gyro2FCDOffset), Math.PI * 2);
     }
 
     public boolean isNotRotating() {
@@ -88,6 +106,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public Rotation2d getRotation2d() {
         return Rotation2d.fromRadians(getHeading());
+    }
+
+    public Rotation2d getFCDRotation2d() {
+        return Rotation2d.fromRadians(getFCDHeading());
     }
 
     public Pose2d getPose() {
@@ -110,6 +132,7 @@ public class SwerveSubsystem extends SubsystemBase {
         }
 
         SmartDashboard.putNumber("Robot Heading", Math.toDegrees(getHeading()));
+        SmartDashboard.putNumber("Robot FCD Heading", Math.toDegrees(getFCDHeading()));
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
     }
      
