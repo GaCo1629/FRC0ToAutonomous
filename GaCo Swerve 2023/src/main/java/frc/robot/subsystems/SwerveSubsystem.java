@@ -131,8 +131,10 @@ public class SwerveSubsystem extends SubsystemBase {
                     camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
         }
 
-        SmartDashboard.putNumber("Robot Heading", Math.toDegrees(getHeading()));
-        SmartDashboard.putNumber("Robot FCD Heading", Math.toDegrees(getFCDHeading()));
+        //SmartDashboard.putNumber("Robot Heading", Math.toDegrees(getHeading()));
+        //SmartDashboard.putNumber("Robot FCD Heading", Math.toDegrees(getFCDHeading()));
+        SmartDashboard.putNumber("Robot Heading", (getHeading()));
+        SmartDashboard.putNumber("Robot FCD Heading", (getFCDHeading()));
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
     }
      
