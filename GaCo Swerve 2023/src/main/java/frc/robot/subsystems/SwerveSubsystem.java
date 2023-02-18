@@ -91,11 +91,11 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public double getHeading() {
-        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle() + gyro2FieldOffset), Math.PI * 2);
+        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle()) + gyro2FieldOffset, Math.PI * 2);
     }
 
     public double getFCDHeading() {
-        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle() + gyro2FCDOffset), Math.PI * 2);
+        return Math.IEEEremainder(Math.toRadians(-gyro.getAngle()) + gyro2FCDOffset, Math.PI * 2);
     }
 
     public boolean isNotRotating() {
