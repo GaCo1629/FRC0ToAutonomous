@@ -5,6 +5,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -74,12 +75,16 @@ public class SwerveModule {
     }
 
     public double getAbsoluteEncoderRad() {
-        double angle = absoluteEncoder.getVoltage() / RobotController.getVoltage5V();
-        angle *= 2.0 * Math.PI;
-        angle -= absoluteEncoderOffsetRad;
+        double angle = getRawAbsoluteEncoderRad() - absoluteEncoderOffsetRad;
         return angle * (absoluteEncoderReversed ? -1.0 : 1.0);
     }
 
+    public double getRawAbsoluteEncoderRad() {
+        double angle = absoluteEncoder.getVoltage() / RobotController.getVoltage5V();
+        angle *= 2.0 * Math.PI;
+        return angle;
+    }
+ 
     public void resetEncoders() {
         driveEncoder.setPosition(0);
         turningEncoder.setPosition(getAbsoluteEncoderRad());
@@ -90,13 +95,14 @@ public class SwerveModule {
     }
 
     public void setDesiredState(SwerveModuleState state) {
-        /*
+        /* 
         SmartDashboard.putString("Swerve[" + absoluteEncoder.getChannel() + "] CMD", state.toString());
         SmartDashboard.putNumber("AngleP[" + absoluteEncoder.getChannel() + "] enc ", getTurningPosition());
         SmartDashboard.putNumber("AngleS[" + absoluteEncoder.getChannel() + "] enc ", getTurningVelocity());
         SmartDashboard.putNumber("DriveP[" + absoluteEncoder.getChannel() + "] enc ", getDrivePosition());
         SmartDashboard.putNumber("DriveS[" + absoluteEncoder.getChannel() + "] enc ", getDriveVelocity());
-        SmartDashboard.putNumber("AbsRad[" + absoluteEncoder.getChannel() + "] annalog ", getAbsoluteEncoderRad());
+        SmartDashboard.putNumber("RawRad[" + absoluteEncoder.getChannel() + "] annalog ", getRawAbsoluteEncoderRad());
+        SmartDashboard.putNumber("AdjRad[" + absoluteEncoder.getChannel() + "] annalog ", getAbsoluteEncoderRad());
         */
         if (Math.abs(state.speedMetersPerSecond) < 0.001) {
             stop();

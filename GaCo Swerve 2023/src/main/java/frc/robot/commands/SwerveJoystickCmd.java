@@ -24,7 +24,7 @@ import org.photonvision.PhotonCamera;
 public class SwerveJoystickCmd extends CommandBase {
 
     private final SwerveSubsystem swerveSubsystem;
-    private final Supplier<Double> xSpdFunction, ySpdFunction, turningSpdLeftFunction, turningSpdRightFunction;
+    private final Supplier<Double> xSpdFunction, ySpdFunction, turnSpdFunction;
     private final Supplier<Boolean> fieldOrientedFunction, goToTargetFunction;
     private final SlewRateLimiter xLimiter, yLimiter, turningLimiter;
     private Joystick driverJoystick, copilotJoystick;
@@ -48,8 +48,7 @@ public class SwerveJoystickCmd extends CommandBase {
         this.copilotJoystick = copilotJoystick;
         xSpdFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverXAxis);
         ySpdFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverYAxis);
-        turningSpdLeftFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisLeft);
-        turningSpdRightFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxisRight);
+        turnSpdFunction = () -> driverJoystick.getRawAxis(OIConstants.kDriverRotAxis);
         fieldOrientedFunction = () -> driverJoystick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx);
         goToTargetFunction = () -> driverJoystick.getRawButton(OIConstants.kDriverGoToTargetButtonIdx);
 
@@ -96,12 +95,12 @@ public class SwerveJoystickCmd extends CommandBase {
         // 1. Get real-time joystick inputs
         double xJoystick = applyDeadband( -xSpdFunction.get(), OIConstants.kDeadband);
         double yJoystick = applyDeadband( -ySpdFunction.get(), OIConstants.kDeadband);
-        double turningJoystick = applyDeadband(turningSpdLeftFunction.get() - turningSpdRightFunction.get(), OIConstants.kDeadband);
+        double turnJoystick = applyDeadband( -turnSpdFunction.get(), OIConstants.kDeadband);
 
         // 2. Convert to real world units
         double xSpeed = xJoystick * DriveConstants.kTeleMaxSpeedMetersPerSecond;
         double ySpeed = yJoystick * DriveConstants.kTeleMaxSpeedMetersPerSecond;
-        double turningSpeed = turningJoystick * DriveConstants.kTeleMaxAngularSpeedRadiansPerSecond;
+        double turnSpeed = turnJoystick * DriveConstants.kTeleMaxAngularSpeedRadiansPerSecond;
        
         // 3. Construct desired chassis speeds
         ChassisSpeeds chassisSpeeds;
@@ -110,9 +109,8 @@ public class SwerveJoystickCmd extends CommandBase {
         double targetToRobotY = 0;
         double targetToRobotT = 0;
 
-
-        double targetToRobotR = 0;
-        double targetToRobotB = 0;
+        double targetToRobotR ;
+        double targetToRobotB ;
 
         // find an apriltag and extract robot position
         // Calculate and display Apriltag data here so we always have it.  Note:  May need to move to own subsystem.
@@ -171,7 +169,7 @@ public class SwerveJoystickCmd extends CommandBase {
                 ySpeed = 0;
             } 
             */
-            chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed); 
+            chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turnSpeed); 
             
         } else {
             // Manual Driving
@@ -180,7 +178,7 @@ public class SwerveJoystickCmd extends CommandBase {
             // Smooth Joystick Speeds
             xSpeed = xLimiter.calculate(xSpeed);
             ySpeed = yLimiter.calculate(ySpeed);
-            turningSpeed = turningLimiter.calculate(turningSpeed);
+            turnSpeed = turningLimiter.calculate(turnSpeed);
 
             //Directional Buttons
             if (DriverStation.getAlliance() == Alliance.Red) {
@@ -207,7 +205,7 @@ public class SwerveJoystickCmd extends CommandBase {
                 
 
             // Check Auto Heading
-            if (Math.abs(turningSpeed) > 0.01) {
+            if (Math.abs(turnSpeed) > 0.01) {
                 headingLocked = false;
             } else if (!headingLocked && swerveSubsystem.isNotRotating()) {
                 headingLocked = true;
@@ -216,9 +214,9 @@ public class SwerveJoystickCmd extends CommandBase {
 
             if (headingLocked) {
 
-                turningSpeed = headingLockController.calculate(currentHeading, headingSetpoint);
-                if (Math.abs(turningSpeed) < 0.1) {
-                    turningSpeed = 0;
+                turnSpeed = headingLockController.calculate(currentHeading, headingSetpoint);
+                if (Math.abs(turnSpeed) < 0.1) {
+                    turnSpeed = 0;
                 } 
             }
 
@@ -229,16 +227,16 @@ public class SwerveJoystickCmd extends CommandBase {
             if (!fieldOrientedFunction.get()) {
                 // Relative to field
                 chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, turningSpeed, swerveSubsystem.getFCDRotation2d());
+                        xSpeed, ySpeed, turnSpeed, swerveSubsystem.getFCDRotation2d());
             } else {
                 // Relative to robot
-                chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
+                chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, turnSpeed);
             }
         }
 
          SmartDashboard.putNumber("X Speed", xSpeed);
          SmartDashboard.putNumber("Y Speed", ySpeed);
-         SmartDashboard.putNumber("Turn Speed", turningSpeed);
+         SmartDashboard.putNumber("Turn Speed", turnSpeed);
 
         // 5. Convert chassis speeds to individual module states
         SwerveModuleState[] moduleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);

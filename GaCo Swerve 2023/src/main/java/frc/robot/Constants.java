@@ -117,9 +117,8 @@ public final class Constants {
         public static final int kCoPilotControllerPort = 1;
 
         public static final int kDriverXAxis = 1;
-        public static final int kDriverYAxis = 4;
-        public static final int kDriverRotAxisLeft = 2;
-        public static final int kDriverRotAxisRight = 3;
+        public static final int kDriverYAxis = 0;
+        public static final int kDriverRotAxis = 4;
         public static final int kDriverFieldOrientedButtonIdx = 6;
         public static final int kDriverGoToTargetButtonIdx = 5;  // PSM
         public static final int kDriverResetRobotHeadingButtonIdx = 8;  // PSM
