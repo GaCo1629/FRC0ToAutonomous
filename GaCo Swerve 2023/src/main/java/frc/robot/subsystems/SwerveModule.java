@@ -70,6 +70,7 @@ public class SwerveModule {
 
     public double getTurningVelocity() {
         return turningEncoder.getVelocity();
+        
     }
 
     public double getAbsoluteEncoderRad() {

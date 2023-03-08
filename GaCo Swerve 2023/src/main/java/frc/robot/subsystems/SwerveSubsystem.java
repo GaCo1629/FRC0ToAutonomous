@@ -136,6 +136,8 @@ public class SwerveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Robot Heading", (getHeading()));
         SmartDashboard.putNumber("Robot FCD Heading", (getFCDHeading()));
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
+
+        
     }
      
     public SwerveModulePosition[] getModulePositions() {
