@@ -84,7 +84,7 @@ public final class Constants {
 
 
         // Max Tele Drive Speeds
-        public static final double kTeleMaxSpeedMetersPerSecond = ModuleConstants.kPhysicalMaxSpeedMetersPerSecond / 2;
+        public static final double kTeleMaxSpeedMetersPerSecond = ModuleConstants.kPhysicalMaxSpeedMetersPerSecond;
         public static final double kTeleMaxAngularSpeedRadiansPerSecond = ModuleConstants.kPhysicalMaxAngularSpeedRadiansPerSecond / 2;
 
         // Max Tele Drive Accels
